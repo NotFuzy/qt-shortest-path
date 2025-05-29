@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>600</width><height>400</height></rect>
+  </property>
+  <property name="windowTitle">
+   <string>Shortest Path App</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+
+    <!-- Количество вершин -->
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayoutVerticesCount">
+      <item>
+       <widget class="QLabel" name="labelVerticesCount">
+        <property name="text"><string>Количество вершин:</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="verticesCountLineEdit">
+        <property name="maximumWidth"><number>50</number></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="setVerticesCountButton">
+        <property name="text"><string>Установить</string></property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+
+    <!-- Добавление ребра -->
+    <item>
+     <layout class="QFormLayout" name="formLayoutAddEdge">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelFromEdge">
+        <property name="text"><string>Откуда:</string></property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="fromEdgeLineEdit"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelToEdge">
+        <property name="text"><string>Куда:</string></property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="toEdgeLineEdit"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="labelWeightEdge">
+        <property name="text"><string>Вес:</string></property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="weightLineEdit"/>
+      </item>
+     </layout>
+    </item>
+
+    <!-- Поиск пути -->
+    <item>
+     <layout class="QFormLayout" name="formLayoutFindPath">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelStart">
+        <property name="text"><string>Начальная вершина:</string></property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="startComboBox"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelEnd">
+        <property name="text"><string>Конечная вершина:</string></property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="endComboBox"/>
+      </item>
+     </layout>
+    </item>
+
+    <!-- Кнопки -->
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayoutButtons">
+      <item><widget class="QPushButton" name="addEdgeButton"><property name="text"><string>Добавить ребро</string></property></widget></item>
+      <item><widget class="QPushButton" name="calculateButton"><property name="text"><string>Найти путь</string></property></widget></item>
+      <item><widget class="QPushButton" name="clearGraphButton"><property name="text"><string>Очистить граф</string></property></widget></item>
+     </layout>
+    </item>
+
+    <!-- Результат -->
+    <item>
+     <widget class="QTextEdit" name="resultTextEdit">
+      <property name="readOnly"><bool>true</bool></property>
+     </widget>
+    </item>
+
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar"/>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
