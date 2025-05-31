@@ -24,7 +24,6 @@ private slots:
     void on_calculateButton_clicked();
     void on_clearGraphButton_clicked();
 
-
 private:
     Ui::MainWindow *ui;
 

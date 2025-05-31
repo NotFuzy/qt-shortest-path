@@ -12,18 +12,11 @@ MainWindow::MainWindow(QWidget *parent)
     // Валидация ввода для всех QLineEdit
     auto validator = new QIntValidator(1, 9999, this);
     ui->verticesCountLineEdit->setValidator(validator);
-    ui->fromEdgeLineEdit->setValidator(validator);
-    ui->toEdgeLineEdit->setValidator(validator);
+    // для ребер меняем с QLineEdit на QComboBox, поэтому валидация для fromEdgeLineEdit и toEdgeLineEdit убирается
     ui->weightLineEdit->setValidator(validator);
 
-    connect(ui->setVerticesCountButton, &QPushButton::clicked,
-            this, &MainWindow::on_setVerticesCountButton_clicked);
-    connect(ui->addEdgeButton, &QPushButton::clicked,
-            this, &MainWindow::on_addEdgeButton_clicked);
-    connect(ui->calculateButton, &QPushButton::clicked,
+    connect(ui->findPathButton, &QPushButton::clicked,
             this, &MainWindow::on_calculateButton_clicked);
-    connect(ui->clearGraphButton, &QPushButton::clicked,
-            this, &MainWindow::on_clearGraphButton_clicked);
 }
 
 MainWindow::~MainWindow()
@@ -48,9 +41,15 @@ void MainWindow::on_setVerticesCountButton_clicked()
     // Обновление списков выбора начальной и конечной вершины
     ui->startComboBox->clear();
     ui->endComboBox->clear();
+    ui->fromEdgeComboBox->clear();
+    ui->toEdgeComboBox->clear();
+
     for (int i = 1; i <= verticesCount; ++i) {
-        ui->startComboBox->addItem(QString::number(i));
-        ui->endComboBox->addItem(QString::number(i));
+        QString vertexStr = QString::number(i);
+        ui->startComboBox->addItem(vertexStr);
+        ui->endComboBox->addItem(vertexStr);
+        ui->fromEdgeComboBox->addItem(vertexStr);
+        ui->toEdgeComboBox->addItem(vertexStr);
     }
 
     ui->resultTextEdit->clear();
@@ -64,12 +63,13 @@ void MainWindow::on_addEdgeButton_clicked()
         return;
     }
 
-    bool ok1, ok2, ok3;
-    int from = ui->fromEdgeLineEdit->text().toInt(&ok1);
-    int to = ui->toEdgeLineEdit->text().toInt(&ok2);
-    int weight = ui->weightLineEdit->text().toInt(&ok3);
+    int from = ui->fromEdgeComboBox->currentText().toInt();
+    int to = ui->toEdgeComboBox->currentText().toInt();
 
-    if (!ok1 || !ok2 || !ok3 || from <= 0 || to <= 0 || weight <= 0
+    bool ok;
+    int weight = ui->weightLineEdit->text().toInt(&ok);
+
+    if (!ok || from <= 0 || to <= 0 || weight <= 0
         || from > verticesCount || to > verticesCount) {
         QMessageBox::warning(this, "Ошибка", "Введите корректные значения.");
         return;
@@ -118,6 +118,8 @@ void MainWindow::on_clearGraphButton_clicked()
 
     ui->startComboBox->clear();
     ui->endComboBox->clear();
+    ui->fromEdgeComboBox->clear();
+    ui->toEdgeComboBox->clear();
     ui->resultTextEdit->clear();
     ui->resultTextEdit->append("Граф очищен.");
 }
