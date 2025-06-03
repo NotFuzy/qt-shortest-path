@@ -40,7 +40,7 @@ void Graph::setDirected(bool directed)
     if (m_directed == directed)
         return;
 
-    // Convert existing edges
+    // Конвертация рёбер при смене направленности
     if (!directed && m_directed) {
         for (int u = 0; u < m_vertices; ++u) {
             for (const auto& edge : adjacencyList[u]) {

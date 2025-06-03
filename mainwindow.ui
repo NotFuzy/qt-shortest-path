@@ -44,25 +44,6 @@
       </layout>
      </widget>
     </item>
-    <item row="0" column="3">
-     <widget class="QGroupBox" name="groupBoxHistory">
-      <property name="title">
-       <string>История действий</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayoutHistory">
-       <item>
-        <widget class="QTextEdit" name="resultTextEdit">
-         <property name="toolTip">
-          <string>Здесь отображается история действий</string>
-         </property>
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
     <item row="1" column="0" colspan="3">
      <widget class="QGroupBox" name="groupBoxEdges">
       <property name="title">
@@ -187,7 +168,7 @@
       </layout>
      </widget>
     </item>
-    <item row="3" column="0" colspan="4">
+    <item row="3" column="0" colspan="3">
      <widget class="QGraphicsView" name="graphView">
       <property name="minimumSize">
        <size>
@@ -198,6 +179,25 @@
       <property name="toolTip">
        <string>Визуализация графа</string>
       </property>
+     </widget>
+    </item>
+    <item row="3" column="3">
+     <widget class="QGroupBox" name="groupBoxHistory">
+      <property name="title">
+       <string>История действий</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayoutHistory">
+       <item>
+        <widget class="QTextEdit" name="resultTextEdit">
+         <property name="toolTip">
+          <string>Здесь отображается история действий</string>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>

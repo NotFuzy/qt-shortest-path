@@ -55,9 +55,9 @@ QString DijkstraAlgorithm::getPathString(const DijkstraResult& result, int to)
 
     QStringList out;
     for (int v : path)
-        out << QString::number(v + 1); // assuming UI is 1-based
+        out << QString::number(v + 1);
 
     return out.join(" → ");
 }
 
-} // namespace graphlib
+}

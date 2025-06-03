@@ -149,6 +149,9 @@ void MainWindow::resetUI()
 
 void MainWindow::drawGraph()
 {
+    if (!graph)
+        return;
+
     scene->clear();
     drawNodes();
     drawEdges();
@@ -192,22 +195,16 @@ void MainWindow::drawEdges()
             QPointF p2 = nodePositions[to];
             QLineF line(p1, p2);
 
-            // Сместим начало и конец линии, чтобы стрелка не заходила в круги
             line.setLength(line.length() - nodeRadius);
             line.setP1(line.pointAt(static_cast<qreal>(nodeRadius) / line.length()));
-
             scene->addLine(line, QPen(Qt::black));
 
             // Подпись веса
             QGraphicsTextItem* weightLabel = scene->addText(QString::number(weight));
             weightLabel->setPos((line.p1() + line.p2()) / 2);
 
-            // Рисуем стрелку
             if (graph->isDirected()) {
-                QLineF line(p1, p2);
                 double angle = std::atan2(-line.dy(), line.dx());
-
-                // Вычисляем точку для наконечника стрелки на расстоянии nodeRadius от центра to
                 QPointF arrowTip = p2 - QPointF(std::cos(angle) * nodeRadius,
                                                 -std::sin(angle) * nodeRadius);
 
@@ -220,6 +217,7 @@ void MainWindow::drawEdges()
                 arrowHead << arrowTip << arrowP1 << arrowP2;
                 scene->addPolygon(arrowHead, QPen(Qt::black), QBrush(Qt::black));
             }
+
             if (!graph->isDirected())
                 drawnEdges.insert(QString("%1-%2").arg(from).arg(to));
         }
