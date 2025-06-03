@@ -97,8 +97,7 @@ void MainWindow::onAddEdgeClicked()
     ui->resultTextEdit->append(log);
     drawGraph();
 }
-
-void MainWindow::onFindPathClicked()
+    void MainWindow::onFindPathClicked()
 {
     if (!graph) {
         QMessageBox::warning(this, "Ошибка", "Сначала создайте граф.");
@@ -120,13 +119,17 @@ void MainWindow::onFindPathClicked()
         return;
     }
 
+    QVector<int> path = DijkstraAlgorithm::getPath(result, to);
     QString pathStr = DijkstraAlgorithm::getPathString(result, to);
     int dist = result.distances[to];
 
     ui->resultTextEdit->append("Кратчайший путь: " + pathStr);
     ui->resultTextEdit->append(QString("Длина пути: %1").arg(dist));
+
     drawGraph();
+    highlightPath(path);
 }
+
 
 void MainWindow::onClearGraphClicked()
 {
@@ -186,6 +189,8 @@ void MainWindow::drawEdges()
     int count = graph->verticesCount();
     const int nodeRadius = 20;
 
+    edgeItems.clear(); // Очищаем старые указатели
+
     for (int from = 0; from < count; ++from) {
         for (const auto& [to, weight] : graph->getEdges(from)) {
             if (!graph->isDirected() && drawnEdges.contains(QString("%1-%2").arg(to).arg(from)))
@@ -197,12 +202,21 @@ void MainWindow::drawEdges()
 
             line.setLength(line.length() - nodeRadius);
             line.setP1(line.pointAt(static_cast<qreal>(nodeRadius) / line.length()));
-            scene->addLine(line, QPen(Qt::black));
+
+            // Рисуем линию и сохраняем указатель
+            QPen edgePen(Qt::black, 2);
+            QGraphicsLineItem* lineItem = scene->addLine(line, edgePen);
+            edgeItems[qMakePair(from, to)] = lineItem;
+
+            if (!graph->isDirected())
+                edgeItems[qMakePair(to, from)] = lineItem;
 
             // Подпись веса
             QGraphicsTextItem* weightLabel = scene->addText(QString::number(weight));
+            weightLabel->setDefaultTextColor(Qt::black);
             weightLabel->setPos((line.p1() + line.p2()) / 2);
 
+            // Рисуем стрелку, если ориентированный
             if (graph->isDirected()) {
                 double angle = std::atan2(-line.dy(), line.dx());
                 QPointF arrowTip = p2 - QPointF(std::cos(angle) * nodeRadius,
@@ -220,6 +234,24 @@ void MainWindow::drawEdges()
 
             if (!graph->isDirected())
                 drawnEdges.insert(QString("%1-%2").arg(from).arg(to));
+        }
+    }
+}
+
+void MainWindow::highlightPath(const QVector<int>& path)
+{
+    // Сброс стиля всех рёбер
+    for (auto* item : edgeItems.values()) {
+        item->setPen(QPen(Qt::black, 2));
+    }
+
+    // Подсветка пути
+    for (int i = 0; i < path.size() - 1; ++i) {
+        int from = path[i];
+        int to = path[i + 1];
+        QPair<int, int> key = qMakePair(from, to);
+        if (edgeItems.contains(key)) {
+            edgeItems[key]->setPen(QPen(Qt::red, 3));
         }
     }
 }

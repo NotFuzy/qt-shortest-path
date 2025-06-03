@@ -18,6 +18,8 @@ public:
     static DijkstraResult findShortestPaths(const Graph& graph, int startVertex);
     static bool hasPath(const DijkstraResult& result, int to);
     static QString getPathString(const DijkstraResult& result, int to);
+    static QVector<int> getPath(const DijkstraResult& result, int to);
+
 };
 
 } // namespace graphlib

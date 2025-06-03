@@ -42,6 +42,19 @@ bool DijkstraAlgorithm::hasPath(const DijkstraResult& result, int to)
     return result.distances[to] != std::numeric_limits<int>::max();
 }
 
+QVector<int> DijkstraAlgorithm::getPath(const DijkstraResult& result, int to)
+{
+    QVector<int> path;
+    if (!hasPath(result, to))
+        return path;
+
+    for (int at = to; at != -1; at = result.previous[at])
+        path.append(at);
+
+    std::reverse(path.begin(), path.end());
+    return path;
+}
+
 QString DijkstraAlgorithm::getPathString(const DijkstraResult& result, int to)
 {
     if (!hasPath(result, to))

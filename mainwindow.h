@@ -36,6 +36,10 @@ private:
     std::unique_ptr<graphlib::Graph> graph;
     QGraphicsScene *scene;
     QVector<QPointF> nodePositions;
+    QMap<QPair<int, int>, QGraphicsLineItem*> edgeItems;
+    void highlightPath(const QVector<int>& path);
+
+
 };
 
 #endif // MAINWINDOW_H
