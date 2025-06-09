@@ -81,4 +81,12 @@ const QVector<QPair<int, int>>& Graph::getEdges(int vertex) const
     return vertexExists(vertex) ? adjacencyList[vertex] : empty;
 }
 
+void Graph::addVertex()
+{
+    ++m_vertices;
+    adjacencyList.resize(m_vertices);
+    emit graphModified();
+}
+
+
 } // namespace graphlib

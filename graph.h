@@ -16,6 +16,7 @@ public:
 
     void addEdge(int from, int to, int weight);
     void clearGraph();
+    void addVertex();
     int verticesCount() const;
     bool isDirected() const;
     void setDirected(bool directed);

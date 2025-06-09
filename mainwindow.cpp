@@ -7,14 +7,17 @@
 #include <QGraphicsTextItem>
 #include <QSet>
 #include <QPolygonF>
+#include <QInputDialog>
 #include <cmath>
 
 using namespace graphlib;
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), scene(new QGraphicsScene(this))
+    : QMainWindow(parent), ui(new Ui::MainWindow), scene(nullptr)
 {
     ui->setupUi(this);
+
+    scene = new ClickableScene(this);
     ui->graphView->setScene(scene);
 
     auto validator = new QIntValidator(1, 9999, this);
@@ -26,6 +29,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->findPathButton, &QPushButton::clicked, this, &MainWindow::onFindPathClicked);
     connect(ui->clearGraphButton, &QPushButton::clicked, this, &MainWindow::onClearGraphClicked);
     connect(ui->directedCheckBox, &QCheckBox::checkStateChanged, this, &MainWindow::onDirectedToggled);
+
+    connect(scene, &ClickableScene::sceneClicked, this, &MainWindow::onSceneClicked);
+    connect(ui->designMode, &QCheckBox::toggled, this, &MainWindow::onDesignModeToggled);
+    connect(ui->clearHistoryButton, &QPushButton::clicked, this, &MainWindow::onClearHistoryClicked);
+
 }
 
 MainWindow::~MainWindow()
@@ -135,9 +143,25 @@ void MainWindow::onClearGraphClicked()
 {
     if (graph)
         graph->clearGraph();
+    graph.reset(); // Чтобы сбросить счётчик и очистить объект
+
+    nodePositions.clear();
+    selectedVertexForEdge = -1;
+
+    ui->startComboBox->clear();
+    ui->endComboBox->clear();
+    ui->fromEdgeComboBox->clear();
+    ui->toEdgeComboBox->clear();
 
     resetUI();
     ui->resultTextEdit->append("Граф очищен.");
+    drawGraph(); // Обновляем визуализацию (будет пустая)
+}
+
+void MainWindow::onClearHistoryClicked()
+{
+    ui->resultTextEdit->clear();
+    ui->resultTextEdit->append("История очищена.");
 }
 
 void MainWindow::resetUI()
@@ -146,7 +170,6 @@ void MainWindow::resetUI()
     ui->endComboBox->clear();
     ui->fromEdgeComboBox->clear();
     ui->toEdgeComboBox->clear();
-    ui->resultTextEdit->clear();
     scene->clear();
 }
 
@@ -167,21 +190,26 @@ void MainWindow::drawNodes()
     const QPointF center(300, 300);
 
     int count = graph->verticesCount();
-    nodePositions.resize(count);
 
-    for (int i = 0; i < count; ++i) {
+    // Автоматически расположить вершины, у которых нет позиции
+    while (nodePositions.size() < count) {
+        int i = nodePositions.size();
         double angle = 2 * M_PI * i / count;
         double x = center.x() + radius * cos(angle);
         double y = center.y() + radius * sin(angle);
-        nodePositions[i] = QPointF(x, y);
+        nodePositions.append(QPointF(x, y));
+    }
 
-        scene->addEllipse(x - nodeRadius, y - nodeRadius, 2 * nodeRadius, 2 * nodeRadius,
+    for (int i = 0; i < count; ++i) {
+        QPointF pos = nodePositions[i];
+        scene->addEllipse(pos.x() - nodeRadius, pos.y() - nodeRadius, 2 * nodeRadius, 2 * nodeRadius,
                           QPen(Qt::black), QBrush(Qt::white));
 
         QGraphicsTextItem* label = scene->addText(QString::number(i + 1));
-        label->setPos(x - 7, y - 15);
+        label->setPos(pos.x() - 7, pos.y() - 15);
     }
 }
+
 
 void MainWindow::drawEdges()
 {
@@ -255,3 +283,99 @@ void MainWindow::highlightPath(const QVector<int>& path)
         }
     }
 }
+
+void MainWindow::onSceneClicked(const QPointF& pos)
+{
+    if (!ui->designMode->isChecked()) {
+        QMessageBox::warning(this, "Недоступно", "Добавление вершин вручную доступно только в режиме дизайна.");
+        return;
+    }
+
+    if (!graph) {
+        graph = std::make_unique<Graph>(0, ui->directedCheckBox->isChecked());
+        nodePositions.clear();
+        selectedVertexForEdge = -1;
+        // Также очистите комбобоксы, если нужно
+        ui->startComboBox->clear();
+        ui->endComboBox->clear();
+        ui->fromEdgeComboBox->clear();
+        ui->toEdgeComboBox->clear();
+    }
+
+    // Проверяем, кликнули ли на уже существующую вершину
+    int clickedVertex = -1;
+    const int clickRadius = 25;
+    for (int i = 0; i < nodePositions.size(); ++i) {
+        if (QLineF(pos, nodePositions[i]).length() <= clickRadius) {
+            clickedVertex = i;
+            break;
+        }
+    }
+
+    if (clickedVertex == -1) {
+        // Кликнули на пустом месте — добавляем вершину
+        graph->addVertex();
+        nodePositions.append(pos);
+
+        int newIndex = graph->verticesCount() - 1;
+        QString vertexStr = QString::number(newIndex + 1);
+
+        ui->startComboBox->addItem(vertexStr);
+        ui->endComboBox->addItem(vertexStr);
+        ui->fromEdgeComboBox->addItem(vertexStr);
+        ui->toEdgeComboBox->addItem(vertexStr);
+
+        ui->resultTextEdit->append(QString("Добавлена вершина %1").arg(newIndex + 1));
+        drawGraph();  // Обновляем визуализацию сразу после добавления вершины
+    } else {
+        // Кликнули на существующей вершине — добавляем ребро
+        if (selectedVertexForEdge == -1) {
+            selectedVertexForEdge = clickedVertex;
+            ui->resultTextEdit->append(QString("Выбрана вершина %1 для соединения").arg(clickedVertex + 1));
+        } else {
+            if (clickedVertex == selectedVertexForEdge) {
+                ui->resultTextEdit->append("Нельзя соединить вершину с самой собой.");
+                selectedVertexForEdge = -1;
+                return;
+            }
+
+            bool ok;
+            int weight = QInputDialog::getInt(this, "Вес ребра",
+                                              QString("Введите вес ребра от %1 до %2:").arg(selectedVertexForEdge + 1).arg(clickedVertex + 1),
+                                              1, 1, 9999, 1, &ok);
+            if (!ok) {
+                ui->resultTextEdit->append("Добавление ребра отменено.");
+                selectedVertexForEdge = -1;
+                return;
+            }
+
+            bool directed = graph->isDirected();
+            graph->addEdge(selectedVertexForEdge, clickedVertex, weight);
+
+            QString log = directed
+                              ? QString("Добавлено ребро (дизайн): %1 → %2 (вес %3)")
+                                    .arg(selectedVertexForEdge + 1).arg(clickedVertex + 1).arg(weight)
+                              : QString("Добавлено неориентированное ребро (дизайн): %1 — %2 (вес %3)")
+                                    .arg(selectedVertexForEdge + 1).arg(clickedVertex + 1).arg(weight);
+
+            ui->resultTextEdit->append(log);
+
+            selectedVertexForEdge = -1;
+            drawGraph();
+        }
+    }
+}
+
+
+void MainWindow::onDesignModeToggled(bool checked)
+{
+    ui->groupBoxVertices->setEnabled(!checked);
+    ui->groupBoxEdges->setEnabled(!checked);
+
+    if (checked) {
+        ui->resultTextEdit->append("Режим дизайна включён: добавление вершин вручную по клику.");
+    } else {
+        ui->resultTextEdit->append("Режим дизайна отключён: добавление через кнопку.");
+    }
+}
+

@@ -6,6 +6,7 @@
 #include <QPointF>
 #include <memory>
 #include "graph.h"
+#include "clickablescene.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -25,6 +26,10 @@ private slots:
     void onAddEdgeClicked();
     void onFindPathClicked();
     void onClearGraphClicked();
+    void onSceneClicked(const QPointF& pos);
+    void onDesignModeToggled(bool checked);
+    void onClearHistoryClicked();
+
 
 private:
     void resetUI();
@@ -34,10 +39,11 @@ private:
 
     Ui::MainWindow *ui;
     std::unique_ptr<graphlib::Graph> graph;
-    QGraphicsScene *scene;
+    ClickableScene *scene;
     QVector<QPointF> nodePositions;
     QMap<QPair<int, int>, QGraphicsLineItem*> edgeItems;
     void highlightPath(const QVector<int>& path);
+    int selectedVertexForEdge = -1;
 
 
 };
