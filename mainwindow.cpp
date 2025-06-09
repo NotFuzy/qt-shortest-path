@@ -6,8 +6,10 @@
 #include <QIntValidator>
 #include <QGraphicsTextItem>
 #include <QSet>
+#include <QVector>
 #include <QPolygonF>
 #include <QInputDialog>
+#include <QFileDialog>
 #include <cmath>
 
 using namespace graphlib;
@@ -39,6 +41,34 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::on_action_1_triggered()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, "Сохранить граф", "", "Graph Files (*.txt)");
+    if (!fileName.isEmpty()) {
+        // Здесь вызывается метод для сохранения графа в текстовый файл
+        saveGraphToFile(fileName);
+        ui->resultTextEdit->append("Граф сохранён в файл: " + fileName);
+    }
+}
+
+void MainWindow::on_action_2_triggered()
+{
+    QString filePath = QFileDialog::getSaveFileName(this, "Сохранить изображение графа", "", "PNG (*.png);;JPEG (*.jpg)");
+    if (!filePath.isEmpty()) {
+        saveSceneAsImage(filePath);
+        ui->resultTextEdit->append("Граф сохранён как изображение: " + filePath);
+    }
+}
+
+void MainWindow::on_action_3_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, "Загрузить граф", "", "Graph Files (*.txt)");
+    if (!fileName.isEmpty()) {
+        loadGraphFromFile(fileName);
+        ui->resultTextEdit->append("Граф загружен из файла: " + fileName);
+    }
 }
 
 void MainWindow::onDirectedToggled(int state)
@@ -143,7 +173,7 @@ void MainWindow::onClearGraphClicked()
 {
     if (graph)
         graph->clearGraph();
-    graph.reset(); // Чтобы сбросить счётчик и очистить объект
+    graph.reset();
 
     nodePositions.clear();
     selectedVertexForEdge = -1;
@@ -155,7 +185,7 @@ void MainWindow::onClearGraphClicked()
 
     resetUI();
     ui->resultTextEdit->append("Граф очищен.");
-    drawGraph(); // Обновляем визуализацию (будет пустая)
+    drawGraph();
 }
 
 void MainWindow::onClearHistoryClicked()
@@ -295,7 +325,7 @@ void MainWindow::onSceneClicked(const QPointF& pos)
         graph = std::make_unique<Graph>(0, ui->directedCheckBox->isChecked());
         nodePositions.clear();
         selectedVertexForEdge = -1;
-        // Также очистите комбобоксы, если нужно
+
         ui->startComboBox->clear();
         ui->endComboBox->clear();
         ui->fromEdgeComboBox->clear();
@@ -364,6 +394,102 @@ void MainWindow::onSceneClicked(const QPointF& pos)
             drawGraph();
         }
     }
+}
+
+void MainWindow::saveGraphToFile(const QString& filePath)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return;
+
+    QTextStream out(&file);
+
+    out << "# Тип графа: directed или undirected\n";
+    out << (graph->isDirected() ? "directed" : "undirected") << "\n\n";
+
+    out << "# Количество вершин\n";
+    out << graph->verticesCount() << "\n\n";
+
+    out << "# Координаты вершин (x y) по одной на строку\n";
+    for (const QPointF& pos : nodePositions) {
+        out << pos.x() << " " << pos.y() << "\n";
+    }
+    out << "\n";
+
+    out << "# Рёбра в формате: from to weight\n";
+    for (int from = 0; from < graph->verticesCount(); ++from) {
+        const auto& edges = graph->getEdges(from);
+        for (const auto& edge : edges) {
+            int to = edge.first;
+            int weight = edge.second;
+            out << from << " " << to << " " << weight << "\n";
+        }
+    }
+
+
+    file.close();
+}
+
+
+
+void MainWindow::loadGraphFromFile(const QString& filePath)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+
+    resetUI();
+    graph.reset();
+
+    QTextStream in(&file);
+
+    QString type;
+    in >> type;
+    bool directed = (type == "directed");
+
+    int vertexCount;
+    in >> vertexCount;
+
+    graph = std::make_unique<Graph>(vertexCount, directed);
+    nodePositions.clear();
+
+    // Загружаем координаты вершин
+    for (int i = 0; i < vertexCount; ++i) {
+        qreal x, y;
+        in >> x >> y;
+        nodePositions.append(QPointF(x, y));
+
+        QString label = QString::number(i + 1);
+        ui->startComboBox->addItem(label);
+        ui->endComboBox->addItem(label);
+        ui->fromEdgeComboBox->addItem(label);
+        ui->toEdgeComboBox->addItem(label);
+    }
+
+    // Загружаем рёбра
+    while (!in.atEnd()) {
+        int from, to, weight;
+        in >> from >> to >> weight;
+        if (!in.atEnd())
+            graph->addEdge(from, to, weight);
+    }
+
+    file.close();
+    drawGraph();
+}
+
+void MainWindow::saveSceneAsImage(const QString& filePath)
+{
+    if (!scene)
+        return;
+
+    QRectF bounds = scene->itemsBoundingRect();
+    QImage image(bounds.size().toSize(), QImage::Format_ARGB32);
+    image.fill(Qt::white);
+
+    QPainter painter(&image);
+    scene->render(&painter, QRectF(), bounds);
+    image.save(filePath);
 }
 
 

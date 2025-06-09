@@ -29,6 +29,12 @@ private slots:
     void onSceneClicked(const QPointF& pos);
     void onDesignModeToggled(bool checked);
     void onClearHistoryClicked();
+    void on_action_1_triggered();
+    void on_action_2_triggered();
+    void on_action_3_triggered();
+    void saveGraphToFile(const QString& filePath);
+    void loadGraphFromFile(const QString& filePath);
+    void saveSceneAsImage(const QString& filePath);
 
 
 private:
