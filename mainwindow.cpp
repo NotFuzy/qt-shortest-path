@@ -196,12 +196,20 @@ void MainWindow::onClearHistoryClicked()
 
 void MainWindow::resetUI()
 {
+    QList<QGraphicsItem*> items = scene->items();
+    for (QGraphicsItem* item : items) {
+        scene->removeItem(item);
+        delete item;
+    }
+
     ui->startComboBox->clear();
     ui->endComboBox->clear();
     ui->fromEdgeComboBox->clear();
     ui->toEdgeComboBox->clear();
-    scene->clear();
+
+    ui->resultTextEdit->clear();
 }
+
 
 void MainWindow::drawGraph()
 {
@@ -426,7 +434,6 @@ void MainWindow::saveGraphToFile(const QString& filePath)
         }
     }
 
-
     file.close();
 }
 
@@ -440,43 +447,64 @@ void MainWindow::loadGraphFromFile(const QString& filePath)
 
     resetUI();
     graph.reset();
-
-    QTextStream in(&file);
-
-    QString type;
-    in >> type;
-    bool directed = (type == "directed");
-
-    int vertexCount;
-    in >> vertexCount;
-
-    graph = std::make_unique<Graph>(vertexCount, directed);
     nodePositions.clear();
 
-    // Загружаем координаты вершин
-    for (int i = 0; i < vertexCount; ++i) {
+    QTextStream in(&file);
+    QString line;
+
+    while (!in.atEnd()) {
+        line = in.readLine().trimmed();
+        if (!line.startsWith("#") && !line.isEmpty())
+            break;
+    }
+    bool directed = (line == "directed");
+
+    while (!in.atEnd()) {
+        line = in.readLine().trimmed();
+        if (!line.startsWith("#") && !line.isEmpty())
+            break;
+    }
+    int vertexCount = line.toInt();
+    graph = std::make_unique<Graph>(vertexCount, directed);
+
+    while (!in.atEnd()) {
+        line = in.readLine().trimmed();
+        if (!line.startsWith("#") && !line.isEmpty())
+            break;
+    }
+
+    int coordLinesRead = 0;
+    do {
+        if (line.startsWith("#") || line.isEmpty()) break;
+        QTextStream coordStream(&line);
         qreal x, y;
-        in >> x >> y;
+        coordStream >> x >> y;
         nodePositions.append(QPointF(x, y));
 
-        QString label = QString::number(i + 1);
+        QString label = QString::number(coordLinesRead + 1);
         ui->startComboBox->addItem(label);
         ui->endComboBox->addItem(label);
         ui->fromEdgeComboBox->addItem(label);
         ui->toEdgeComboBox->addItem(label);
-    }
 
-    // Загружаем рёбра
+        coordLinesRead++;
+        line = in.readLine().trimmed();
+    } while (coordLinesRead < vertexCount && !in.atEnd());
+
     while (!in.atEnd()) {
+        line = in.readLine().trimmed();
+        if (line.startsWith("#") || line.isEmpty()) continue;
+
+        QTextStream edgeStream(&line);
         int from, to, weight;
-        in >> from >> to >> weight;
-        if (!in.atEnd())
-            graph->addEdge(from, to, weight);
+        edgeStream >> from >> to >> weight;
+        graph->addEdge(from, to, weight);
     }
 
     file.close();
     drawGraph();
 }
+
 
 void MainWindow::saveSceneAsImage(const QString& filePath)
 {
