@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "dijkstra.h"
+#include "dijkstrastepper.h"
 
 #include <QMessageBox>
 #include <QIntValidator>
@@ -13,6 +14,7 @@
 #include <cmath>
 
 using namespace graphlib;
+using graphlib::DijkstraStepper;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), scene(nullptr)
@@ -35,6 +37,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(scene, &ClickableScene::sceneClicked, this, &MainWindow::onSceneClicked);
     connect(ui->designMode, &QCheckBox::toggled, this, &MainWindow::onDesignModeToggled);
     connect(ui->clearHistoryButton, &QPushButton::clicked, this, &MainWindow::onClearHistoryClicked);
+    connect(ui->stepButton, &QPushButton::clicked, this, &MainWindow::onStepClicked);
+
+
 
 }
 
@@ -530,6 +535,100 @@ void MainWindow::onDesignModeToggled(bool checked)
         ui->resultTextEdit->append("Режим дизайна включён: добавление вершин вручную по клику.");
     } else {
         ui->resultTextEdit->append("Режим дизайна отключён: добавление через кнопку.");
+    }
+}
+
+void MainWindow::onStepClicked()
+{
+    if (!stepper) {
+        int start = ui->startComboBox->currentIndex();
+        if (start < 0) {
+            ui->resultTextEdit->append("Выберите начальную вершину.");
+            return;
+        }
+        stepper = std::make_unique<graphlib::DijkstraStepper>(*graph, start);
+        ui->resultTextEdit->append("Начато пошаговое выполнение алгоритма Дейкстры.");
+    }
+
+    graphlib::StepChange change;
+    do {
+        change = stepper->nextStep();
+    } while (stepper->hasNextStep() && change.currentVertex == -1);
+
+    // Алгоритм завершён — очередь пуста
+    if (!stepper->hasNextStep() && change.currentVertex == -1) {
+        ui->resultTextEdit->append("Алгоритм завершён.");
+
+        int end = ui->endComboBox->currentIndex();
+        const auto& state = stepper->getState();
+
+        if (end < 0 || end >= state.distances.size()) {
+            ui->resultTextEdit->append("Выберите конечную вершину.");
+        } else if (state.distances[end] == std::numeric_limits<int>::max()) {
+            ui->resultTextEdit->append("Путь не существует.");
+        } else {
+            QVector<int> path;
+            for (int at = end; at != -1; at = state.previous[at])
+                path.append(at);
+            std::reverse(path.begin(), path.end());
+
+            QStringList pathStrList;
+            for (int v : path)
+                pathStrList << QString::number(v + 1);
+
+            ui->resultTextEdit->append(QString("Кратчайший путь: %1").arg(pathStrList.join(" → ")));
+            ui->resultTextEdit->append(QString("Длина пути: %1").arg(state.distances[end]));
+
+            highlightPath(path);
+        }
+
+        stepper.reset(); // очистка после завершения
+        return;
+    }
+
+    // Отображение текущего шага
+    int current = stepper->getState().currentVertex + 1;
+    if (change.vertexUpdated != -1) {
+        ui->resultTextEdit->append(
+            QString("Обработана вершина %1: обновлено расстояние до вершины %2 с %3 на %4 (через %5)")
+                .arg(current)
+                .arg(change.vertexUpdated + 1)
+                .arg(change.oldDistance == std::numeric_limits<int>::max() ? "∞" : QString::number(change.oldDistance))
+                .arg(change.newDistance)
+                .arg(change.fromVertex + 1)
+            );
+    } else {
+        ui->resultTextEdit->append(
+            QString("Обработана вершина %1: соседние вершины не обновлены").arg(current)
+            );
+    }
+
+    updateGraphVisualization(change);
+}
+
+
+
+
+void MainWindow::updateGraphVisualization(const graphlib::StepChange& change)
+{
+    drawGraph(); // сбрасываем всё, чтобы очистить старые подсветки
+
+    // Подсветить текущую вершину
+    int cur = stepper->getState().currentVertex;
+    if (cur >= 0 && cur < nodePositions.size()) {
+        QGraphicsEllipseItem* item = scene->addEllipse(
+            nodePositions[cur].x() - 15, nodePositions[cur].y() - 15,
+            30, 30, QPen(Qt::black), QBrush(Qt::yellow)
+            );
+        item->setZValue(1); // выше ребер
+    }
+
+    // Подсветить обновлённое ребро
+    if (change.vertexUpdated != -1) {
+        auto key = QPair<int, int>(change.fromVertex, change.vertexUpdated);
+        if (edgeItems.contains(key)) {
+            edgeItems[key]->setPen(QPen(Qt::red, 3)); // толщина 3, красный цвет
+        }
     }
 }
 

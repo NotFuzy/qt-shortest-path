@@ -12,6 +12,7 @@ CONFIG += c++17
 SOURCES += \
     clickablescene.cpp \
     dijkstra.cpp \
+    dijkstrastepper.cpp \
     graph.cpp \
     main.cpp \
     mainwindow.cpp
@@ -19,6 +20,7 @@ SOURCES += \
 HEADERS += \
     clickablescene.h \
     dijkstra.h \
+    dijkstrastepper.h \
     graph.h \
     mainwindow.h
 

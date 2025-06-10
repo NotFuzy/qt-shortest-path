@@ -7,6 +7,7 @@
 #include <memory>
 #include "graph.h"
 #include "clickablescene.h"
+#include "dijkstrastepper.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -35,6 +36,9 @@ private slots:
     void saveGraphToFile(const QString& filePath);
     void loadGraphFromFile(const QString& filePath);
     void saveSceneAsImage(const QString& filePath);
+    void onStepClicked();
+    void updateGraphVisualization(const graphlib::StepChange& change);
+
 
 
 private:
@@ -50,6 +54,7 @@ private:
     QMap<QPair<int, int>, QGraphicsLineItem*> edgeItems;
     void highlightPath(const QVector<int>& path);
     int selectedVertexForEdge = -1;
+    std::unique_ptr<graphlib::DijkstraStepper> stepper;
 
 
 };

@@ -223,6 +223,13 @@
       </layout>
      </widget>
     </item>
+    <item row="2" column="3">
+     <widget class="QPushButton" name="stepButton">
+      <property name="text">
+       <string>Следующий шаг</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
