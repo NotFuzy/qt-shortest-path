@@ -15,6 +15,7 @@ signals:
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void wheelEvent(QGraphicsSceneWheelEvent *event) override;
 };
 
 #endif // CLICKABLESCENE_H
