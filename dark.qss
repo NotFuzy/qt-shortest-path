@@ -1,0 +1,64 @@
+QWidget {
+    background-color: #2b2b2b;
+    color: #dddddd;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 12pt;
+}
+
+QPushButton {
+    background-color: #444444;
+    border: 1px solid #555555;
+    border-radius: 5px;
+    padding: 6px 12px;
+    color: #dddddd;
+}
+
+QPushButton:hover {
+    background-color: #555555;
+}
+
+QPushButton:pressed {
+    background-color: #666666;
+}
+
+QLineEdit, QComboBox, QTextEdit {
+    background-color: #3c3c3c;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    padding: 4px;
+    color: #dddddd;
+}
+
+QGroupBox {
+    border: 1px solid #555555;
+    border-radius: 6px;
+    margin-top: 8px;
+    font-weight: bold;
+    color: #cccccc;
+}
+
+QGroupBox:title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding-left: 8px;
+    padding-top: -8px;
+}
+
+QCheckBox {
+    spacing: 5px;
+}
+
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #5699d2;
+    border: 1px solid #4a8ac4;
+}
+
+QCheckBox::indicator:unchecked {
+    background-color: #2b2b2b;
+    border: 1px solid #555555;
+}

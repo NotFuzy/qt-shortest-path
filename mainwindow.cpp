@@ -11,6 +11,8 @@
 #include <QPolygonF>
 #include <QInputDialog>
 #include <QFileDialog>
+#include <QFile>
+#include <QDebug>
 #include <cmath>
 
 using namespace graphlib;
@@ -39,6 +41,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->clearHistoryButton, &QPushButton::clicked, this, &MainWindow::onClearHistoryClicked);
     connect(ui->stepButton, &QPushButton::clicked, this, &MainWindow::onStepClicked);
 
+    connect(ui->actionToggleTheme, &QAction::triggered, this, &MainWindow::toggleTheme);
+
+    applyStyle("light");
+
 
 
 }
@@ -47,6 +53,50 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::applyStyle(const QString& styleName)
+{
+    QString resourcePath;
+    if (styleName == "dark") {
+        resourcePath = ":/dark.qss";
+    } else {
+        resourcePath = ":/light.qss";
+    }
+
+    QFile file(resourcePath);
+    if (file.open(QFile::ReadOnly | QFile::Text)) {
+        QString styleSheet = QString::fromUtf8(file.readAll());
+        qApp->setStyleSheet(styleSheet);
+        file.close();
+    } else {
+        qDebug() << "Не удалось загрузить стиль:" << resourcePath;
+    }
+}
+
+void MainWindow::on_actionToggleTheme_triggered(bool checked)
+{
+    if (checked) {
+        applyStyle("dark");
+    } else {
+        applyStyle("light");
+    }
+}
+
+void MainWindow::toggleTheme()
+{
+    darkTheme = !darkTheme;
+
+    QString stylePath = darkTheme ? ":/dark.qss" : ":/style.qss";
+    QFile styleFile(stylePath);
+
+    if (styleFile.open(QFile::ReadOnly)) {
+        QString style = QLatin1String(styleFile.readAll());
+        qApp->setStyleSheet(style);
+    }
+
+    drawGraph(); // Перерисовать граф с новыми цветами
+}
+
 
 void MainWindow::on_action_1_triggered()
 {
@@ -262,6 +312,9 @@ void MainWindow::drawEdges()
 
     edgeItems.clear(); // Очищаем старые указатели
 
+    QColor lineColor = darkTheme ? Qt::white : Qt::black;
+    QColor textColor = darkTheme ? Qt::white : Qt::black;
+
     for (int from = 0; from < count; ++from) {
         for (const auto& [to, weight] : graph->getEdges(from)) {
             if (!graph->isDirected() && drawnEdges.contains(QString("%1-%2").arg(to).arg(from)))
@@ -275,7 +328,7 @@ void MainWindow::drawEdges()
             line.setP1(line.pointAt(static_cast<qreal>(nodeRadius) / line.length()));
 
             // Рисуем линию и сохраняем указатель
-            QPen edgePen(Qt::black, 2);
+            QPen edgePen(lineColor, 2);
             QGraphicsLineItem* lineItem = scene->addLine(line, edgePen);
             edgeItems[qMakePair(from, to)] = lineItem;
 
@@ -284,7 +337,7 @@ void MainWindow::drawEdges()
 
             // Подпись веса
             QGraphicsTextItem* weightLabel = scene->addText(QString::number(weight));
-            weightLabel->setDefaultTextColor(Qt::black);
+            weightLabel->setDefaultTextColor(textColor);
             weightLabel->setPos((line.p1() + line.p2()) / 2);
 
             // Рисуем стрелку, если ориентированный
@@ -300,7 +353,8 @@ void MainWindow::drawEdges()
 
                 QPolygonF arrowHead;
                 arrowHead << arrowTip << arrowP1 << arrowP2;
-                scene->addPolygon(arrowHead, QPen(Qt::black), QBrush(Qt::black));
+
+                scene->addPolygon(arrowHead, QPen(lineColor), QBrush(lineColor));
             }
 
             if (!graph->isDirected())

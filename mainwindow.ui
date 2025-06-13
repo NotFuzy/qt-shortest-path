@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1031</width>
-    <height>706</height>
+    <width>1084</width>
+    <height>725</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,29 +15,115 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0" colspan="3">
-     <widget class="QGroupBox" name="groupBoxVertices">
+    <item row="2" column="0" colspan="3">
+     <widget class="QGroupBox" name="groupBoxPath">
       <property name="title">
-       <string>Вершины</string>
+       <string>Путь</string>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayoutVertices">
+      <layout class="QHBoxLayout" name="horizontalLayoutPath">
        <item>
-        <widget class="QLineEdit" name="verticesCountLineEdit">
+        <widget class="QCheckBox" name="directedCheckBox">
          <property name="toolTip">
-          <string>Введите количество вершин графа</string>
+          <string>Отметьте, если граф ориентированный</string>
          </property>
-         <property name="placeholderText">
-          <string>Введите количество вершин</string>
+         <property name="text">
+          <string>Ориентированный граф</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="setVerticesCountButton">
-         <property name="toolTip">
-          <string>Подтвердить количество вершин</string>
-         </property>
+        <widget class="QLabel" name="labelStart">
          <property name="text">
-          <string>Установить</string>
+          <string>Начало:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="startComboBox">
+         <property name="toolTip">
+          <string>Выберите начальную вершину пути</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelEnd">
+         <property name="text">
+          <string>Конец:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="endComboBox">
+         <property name="toolTip">
+          <string>Выберите конечную вершину пути</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>Работа с графом</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QPushButton" name="findPathButton">
+            <property name="toolTip">
+             <string>Вычислить кратчайший путь</string>
+            </property>
+            <property name="text">
+             <string>Найти путь</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="stepButton">
+            <property name="text">
+             <string>Следующий шаг</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="title">
+          <string>Очистка</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QPushButton" name="clearGraphButton">
+            <property name="toolTip">
+             <string>Удалить все вершины и рёбра</string>
+            </property>
+            <property name="text">
+             <string>Очистить граф</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="clearHistoryButton">
+            <property name="text">
+             <string>Очистить историю</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string>Режим дизайна</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QCheckBox" name="designMode">
+         <property name="text">
+          <string>Ручной ввод </string>
          </property>
         </widget>
        </item>
@@ -101,91 +187,33 @@
       </layout>
      </widget>
     </item>
-    <item row="2" column="0" colspan="3">
-     <widget class="QGroupBox" name="groupBoxPath">
+    <item row="0" column="0" colspan="3">
+     <widget class="QGroupBox" name="groupBoxVertices">
       <property name="title">
-       <string>Путь</string>
+       <string>Вершины</string>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayoutPath">
+      <layout class="QHBoxLayout" name="horizontalLayoutVertices">
        <item>
-        <widget class="QCheckBox" name="directedCheckBox">
+        <widget class="QLineEdit" name="verticesCountLineEdit">
          <property name="toolTip">
-          <string>Отметьте, если граф ориентированный</string>
+          <string>Введите количество вершин графа</string>
          </property>
-         <property name="text">
-          <string>Ориентированный граф</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="labelStart">
-         <property name="text">
-          <string>Начало:</string>
+         <property name="placeholderText">
+          <string>Введите количество вершин</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="startComboBox">
+        <widget class="QPushButton" name="setVerticesCountButton">
          <property name="toolTip">
-          <string>Выберите начальную вершину пути</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="labelEnd">
-         <property name="text">
-          <string>Конец:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="endComboBox">
-         <property name="toolTip">
-          <string>Выберите конечную вершину пути</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="findPathButton">
-         <property name="toolTip">
-          <string>Вычислить кратчайший путь</string>
+          <string>Подтвердить количество вершин</string>
          </property>
          <property name="text">
-          <string>Найти путь</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="clearGraphButton">
-         <property name="toolTip">
-          <string>Удалить все вершины и рёбра</string>
-         </property>
-         <property name="text">
-          <string>Очистить граф</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="clearHistoryButton">
-         <property name="text">
-          <string>Очистить историю</string>
+          <string>Установить</string>
          </property>
         </widget>
        </item>
       </layout>
-     </widget>
-    </item>
-    <item row="3" column="0" colspan="3">
-     <widget class="QGraphicsView" name="graphView">
-      <property name="minimumSize">
-       <size>
-        <width>320</width>
-        <height>400</height>
-       </size>
-      </property>
-      <property name="toolTip">
-       <string>Визуализация графа</string>
-      </property>
      </widget>
     </item>
     <item row="3" column="3">
@@ -207,26 +235,16 @@
       </layout>
      </widget>
     </item>
-    <item row="0" column="3">
-     <widget class="QGroupBox" name="groupBox">
-      <property name="title">
-       <string>Режим дизайна</string>
+    <item row="3" column="0" colspan="3">
+     <widget class="QGraphicsView" name="graphView">
+      <property name="minimumSize">
+       <size>
+        <width>320</width>
+        <height>400</height>
+       </size>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QCheckBox" name="designMode">
-         <property name="text">
-          <string>Ручной ввод </string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="2" column="3">
-     <widget class="QPushButton" name="stepButton">
-      <property name="text">
-       <string>Следующий шаг</string>
+      <property name="toolTip">
+       <string>Визуализация графа</string>
       </property>
      </widget>
     </item>
@@ -238,7 +256,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1031</width>
+     <width>1084</width>
      <height>22</height>
     </rect>
    </property>
@@ -252,7 +270,14 @@
     <addaction name="action_3"/>
     <addaction name="separator"/>
    </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>Настройка приложения</string>
+    </property>
+    <addaction name="actionToggleTheme"/>
+   </widget>
    <addaction name="menu"/>
+   <addaction name="menu_2"/>
   </widget>
   <action name="action_1">
    <property name="text">
@@ -267,6 +292,14 @@
   <action name="action_3">
    <property name="text">
     <string>Загрузить текстовый файл</string>
+   </property>
+  </action>
+  <action name="actionToggleTheme">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Тёмная тема</string>
    </property>
   </action>
  </widget>

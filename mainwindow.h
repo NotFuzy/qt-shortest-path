@@ -38,7 +38,9 @@ private slots:
     void saveSceneAsImage(const QString& filePath);
     void onStepClicked();
     void updateGraphVisualization(const graphlib::StepChange& change);
-
+    void applyStyle(const QString& styleName);
+    void on_actionToggleTheme_triggered(bool checked);
+    void toggleTheme();
 
 
 private:
@@ -55,6 +57,7 @@ private:
     void highlightPath(const QVector<int>& path);
     int selectedVertexForEdge = -1;
     std::unique_ptr<graphlib::DijkstraStepper> stepper;
+    bool darkTheme = false;
 
 
 };
