@@ -43,6 +43,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->actionToggleTheme, &QAction::triggered, this, &MainWindow::toggleTheme);
 
+    // Подключаем переключение языка к существующим действиям
+    connect(ui->actionEnglish, &QAction::triggered, [this]() {
+        switchLanguage("en");
+    });
+
+    connect(ui->actionRussia, &QAction::triggered, [this]() {
+        switchLanguage("ru");
+    });
+
+
+
     applyStyle("light");
 
 
@@ -53,6 +64,25 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::switchLanguage(const QString &locale)
+{
+    qApp->removeTranslator(&translator);
+
+    QString qmFile = QString(":/app_%1.qm").arg(locale);
+    if (translator.load(qmFile)) {
+        qApp->installTranslator(&translator);
+        ui->retranslateUi(this);
+    } else {
+        qDebug() << "Не удалось загрузить перевод:" << qmFile;
+    }
+}
+
+void MainWindow::retranslateUi()
+{
+    ui->retranslateUi(this);
+}
+
 
 void MainWindow::applyStyle(const QString& styleName)
 {
@@ -69,7 +99,7 @@ void MainWindow::applyStyle(const QString& styleName)
         qApp->setStyleSheet(styleSheet);
         file.close();
     } else {
-        qDebug() << "Не удалось загрузить стиль:" << resourcePath;
+        QMessageBox::warning(nullptr, QObject::tr("Ошибка"), QObject::tr("Не удалось загрузить файл стилей!"));
     }
 }
 
@@ -100,29 +130,28 @@ void MainWindow::toggleTheme()
 
 void MainWindow::on_action_1_triggered()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, "Сохранить граф", "", "Graph Files (*.txt)");
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить граф"), "", "Graph Files (*.txt)");
     if (!fileName.isEmpty()) {
-        // Здесь вызывается метод для сохранения графа в текстовый файл
         saveGraphToFile(fileName);
-        ui->resultTextEdit->append("Граф сохранён в файл: " + fileName);
+        ui->resultTextEdit->append(tr("Граф сохранён в файл: %1").arg(fileName));
     }
 }
 
 void MainWindow::on_action_2_triggered()
 {
-    QString filePath = QFileDialog::getSaveFileName(this, "Сохранить изображение графа", "", "PNG (*.png);;JPEG (*.jpg)");
+    QString filePath = QFileDialog::getSaveFileName(this, tr("Сохранить изображение графа"), "", "PNG (*.png);;JPEG (*.jpg)");
     if (!filePath.isEmpty()) {
         saveSceneAsImage(filePath);
-        ui->resultTextEdit->append("Граф сохранён как изображение: " + filePath);
+        ui->resultTextEdit->append(tr("Граф сохранён как изображение: %1").arg(filePath));
     }
 }
 
 void MainWindow::on_action_3_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, "Загрузить граф", "", "Graph Files (*.txt)");
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Загрузить граф"), "", "Graph Files (*.txt)");
     if (!fileName.isEmpty()) {
         loadGraphFromFile(fileName);
-        ui->resultTextEdit->append("Граф загружен из файла: " + fileName);
+        ui->resultTextEdit->append(tr("Граф загружен из файла: %1").arg(fileName));
     }
 }
 
@@ -139,7 +168,7 @@ void MainWindow::onCreateGraphClicked()
     bool ok;
     int count = ui->verticesCountLineEdit->text().toInt(&ok);
     if (!ok || count <= 0) {
-        QMessageBox::warning(this, "Ошибка", "Введите корректное количество вершин.");
+        QMessageBox::warning(this, tr("Ошибка"), tr("Введите корректное количество вершин."));
         return;
     }
 
@@ -159,14 +188,14 @@ void MainWindow::onCreateGraphClicked()
     }
 
     ui->resultTextEdit->clear();
-    ui->resultTextEdit->append(QString("Создан граф с %1 вершинами").arg(count));
+    ui->resultTextEdit->append(QString(tr("Создан граф с %1 вершинами")).arg(count));
     drawGraph();
 }
 
 void MainWindow::onAddEdgeClicked()
 {
     if (!graph) {
-        QMessageBox::warning(this, "Ошибка", "Сначала создайте граф.");
+        QMessageBox::warning(this, tr("Ошибка"), tr("Сначала создайте граф."));
         return;
     }
 
@@ -177,15 +206,15 @@ void MainWindow::onAddEdgeClicked()
     int weight = ui->weightLineEdit->text().toInt(&ok);
 
     if (!ok || weight <= 0) {
-        QMessageBox::warning(this, "Ошибка", "Введите корректные значения.");
+        QMessageBox::warning(this, tr("Ошибка"), tr("Введите корректные значения."));
         return;
     }
 
     graph->addEdge(from, to, weight);
 
     QString log = graph->isDirected()
-                      ? QString("Добавлено ребро: %1 → %2 (вес %3)").arg(from + 1).arg(to + 1).arg(weight)
-                      : QString("Добавлено неориентированное ребро: %1 — %2 (вес %3)").arg(from + 1).arg(to + 1).arg(weight);
+                      ? QString(tr("Добавлено ребро: %1 → %2 (вес %3)")).arg(from + 1).arg(to + 1).arg(weight)
+                      : QString(tr("Добавлено неориентированное ребро: %1 — %2 (вес %3)")).arg(from + 1).arg(to + 1).arg(weight);
 
     ui->resultTextEdit->append(log);
     drawGraph();
@@ -193,7 +222,7 @@ void MainWindow::onAddEdgeClicked()
     void MainWindow::onFindPathClicked()
 {
     if (!graph) {
-        QMessageBox::warning(this, "Ошибка", "Сначала создайте граф.");
+        QMessageBox::warning(this, tr("Ошибка"), tr("Сначала создайте граф."));
         return;
     }
 
@@ -201,14 +230,14 @@ void MainWindow::onAddEdgeClicked()
     int to = ui->endComboBox->currentIndex();
 
     if (from == -1 || to == -1) {
-        QMessageBox::warning(this, "Ошибка", "Выберите корректные вершины.");
+        QMessageBox::warning(this, tr("Ошибка"), tr("Выберите корректные вершины."));
         return;
     }
 
     DijkstraResult result = DijkstraAlgorithm::findShortestPaths(*graph, from);
 
     if (!DijkstraAlgorithm::hasPath(result, to)) {
-        ui->resultTextEdit->append("Путь не существует.");
+        ui->resultTextEdit->append(tr("Путь не существует."));
         return;
     }
 
@@ -216,8 +245,9 @@ void MainWindow::onAddEdgeClicked()
     QString pathStr = DijkstraAlgorithm::getPathString(result, to);
     int dist = result.distances[to];
 
-    ui->resultTextEdit->append("Кратчайший путь: " + pathStr);
-    ui->resultTextEdit->append(QString("Длина пути: %1").arg(dist));
+    ui->resultTextEdit->append(tr("Кратчайший путь: %1").arg(pathStr));
+    ui->resultTextEdit->append(tr("Длина пути: %1").arg(dist));
+
 
     drawGraph();
     highlightPath(path);
@@ -239,14 +269,14 @@ void MainWindow::onClearGraphClicked()
     ui->toEdgeComboBox->clear();
 
     resetUI();
-    ui->resultTextEdit->append("Граф очищен.");
+    ui->resultTextEdit->append(tr("Граф очищен."));
     drawGraph();
 }
 
 void MainWindow::onClearHistoryClicked()
 {
     ui->resultTextEdit->clear();
-    ui->resultTextEdit->append("История очищена.");
+    ui->resultTextEdit->append(tr("История очищена."));
 }
 
 void MainWindow::resetUI()
@@ -284,7 +314,6 @@ void MainWindow::drawNodes()
 
     int count = graph->verticesCount();
 
-    // Автоматически расположить вершины, у которых нет позиции
     while (nodePositions.size() < count) {
         int i = nodePositions.size();
         double angle = 2 * M_PI * i / count;
@@ -310,7 +339,7 @@ void MainWindow::drawEdges()
     int count = graph->verticesCount();
     const int nodeRadius = 20;
 
-    edgeItems.clear(); // Очищаем старые указатели
+    edgeItems.clear();
 
     QColor lineColor = darkTheme ? Qt::white : Qt::black;
     QColor textColor = darkTheme ? Qt::white : Qt::black;
@@ -384,7 +413,7 @@ void MainWindow::highlightPath(const QVector<int>& path)
 void MainWindow::onSceneClicked(const QPointF& pos)
 {
     if (!ui->designMode->isChecked()) {
-        QMessageBox::warning(this, "Недоступно", "Добавление вершин вручную доступно только в режиме дизайна.");
+        QMessageBox::warning(this, tr("Недоступно"), tr("Добавление вершин вручную доступно только в режиме дизайна."));
         return;
     }
 
@@ -422,26 +451,26 @@ void MainWindow::onSceneClicked(const QPointF& pos)
         ui->fromEdgeComboBox->addItem(vertexStr);
         ui->toEdgeComboBox->addItem(vertexStr);
 
-        ui->resultTextEdit->append(QString("Добавлена вершина %1").arg(newIndex + 1));
+        ui->resultTextEdit->append(tr("Добавлена вершина %1").arg(newIndex + 1));
         drawGraph();  // Обновляем визуализацию сразу после добавления вершины
     } else {
         // Кликнули на существующей вершине — добавляем ребро
         if (selectedVertexForEdge == -1) {
             selectedVertexForEdge = clickedVertex;
-            ui->resultTextEdit->append(QString("Выбрана вершина %1 для соединения").arg(clickedVertex + 1));
+            ui->resultTextEdit->append(tr("Выбрана вершина %1 для соединения").arg(clickedVertex + 1));
         } else {
             if (clickedVertex == selectedVertexForEdge) {
-                ui->resultTextEdit->append("Нельзя соединить вершину с самой собой.");
+                ui->resultTextEdit->append(tr("Нельзя соединить вершину с самой собой."));
                 selectedVertexForEdge = -1;
                 return;
             }
 
             bool ok;
-            int weight = QInputDialog::getInt(this, "Вес ребра",
-                                              QString("Введите вес ребра от %1 до %2:").arg(selectedVertexForEdge + 1).arg(clickedVertex + 1),
+            int weight = QInputDialog::getInt(this, tr("Вес ребра"),
+                                              tr("Введите вес ребра от %1 до %2:").arg(selectedVertexForEdge + 1).arg(clickedVertex + 1),
                                               1, 1, 9999, 1, &ok);
             if (!ok) {
-                ui->resultTextEdit->append("Добавление ребра отменено.");
+                ui->resultTextEdit->append(tr("Добавление ребра отменено."));
                 selectedVertexForEdge = -1;
                 return;
             }
@@ -450,10 +479,8 @@ void MainWindow::onSceneClicked(const QPointF& pos)
             graph->addEdge(selectedVertexForEdge, clickedVertex, weight);
 
             QString log = directed
-                              ? QString("Добавлено ребро (дизайн): %1 → %2 (вес %3)")
-                                    .arg(selectedVertexForEdge + 1).arg(clickedVertex + 1).arg(weight)
-                              : QString("Добавлено неориентированное ребро (дизайн): %1 — %2 (вес %3)")
-                                    .arg(selectedVertexForEdge + 1).arg(clickedVertex + 1).arg(weight);
+                              ? tr("Добавлено ребро (дизайн): %1 → %2 (вес %3)").arg(selectedVertexForEdge + 1).arg(clickedVertex + 1).arg(weight)
+                              : tr("Добавлено неориентированное ребро (дизайн): %1 — %2 (вес %3)").arg(selectedVertexForEdge + 1).arg(clickedVertex + 1).arg(weight);
 
             ui->resultTextEdit->append(log);
 
@@ -586,9 +613,9 @@ void MainWindow::onDesignModeToggled(bool checked)
     ui->groupBoxEdges->setEnabled(!checked);
 
     if (checked) {
-        ui->resultTextEdit->append("Режим дизайна включён: добавление вершин вручную по клику.");
+        ui->resultTextEdit->append(tr("Режим дизайна включён: добавление вершин вручную по клику."));
     } else {
-        ui->resultTextEdit->append("Режим дизайна отключён: добавление через кнопку.");
+        ui->resultTextEdit->append(tr("Режим дизайна отключён: добавление через кнопку."));
     }
 }
 
@@ -597,11 +624,11 @@ void MainWindow::onStepClicked()
     if (!stepper) {
         int start = ui->startComboBox->currentIndex();
         if (start < 0) {
-            ui->resultTextEdit->append("Выберите начальную вершину.");
+            ui->resultTextEdit->append(tr("Выберите начальную вершину."));
             return;
         }
         stepper = std::make_unique<graphlib::DijkstraStepper>(*graph, start);
-        ui->resultTextEdit->append("Начато пошаговое выполнение алгоритма Дейкстры.");
+        ui->resultTextEdit->append(tr("Начато пошаговое выполнение алгоритма Дейкстры."));
     }
 
     graphlib::StepChange change;
@@ -611,15 +638,15 @@ void MainWindow::onStepClicked()
 
     // Алгоритм завершён — очередь пуста
     if (!stepper->hasNextStep() && change.currentVertex == -1) {
-        ui->resultTextEdit->append("Алгоритм завершён.");
+        ui->resultTextEdit->append(tr("Алгоритм завершён."));
 
         int end = ui->endComboBox->currentIndex();
         const auto& state = stepper->getState();
 
         if (end < 0 || end >= state.distances.size()) {
-            ui->resultTextEdit->append("Выберите конечную вершину.");
+            ui->resultTextEdit->append(tr("Выберите конечную вершину."));
         } else if (state.distances[end] == std::numeric_limits<int>::max()) {
-            ui->resultTextEdit->append("Путь не существует.");
+            ui->resultTextEdit->append(tr("Путь не существует."));
         } else {
             QVector<int> path;
             for (int at = end; at != -1; at = state.previous[at])
@@ -630,8 +657,8 @@ void MainWindow::onStepClicked()
             for (int v : path)
                 pathStrList << QString::number(v + 1);
 
-            ui->resultTextEdit->append(QString("Кратчайший путь: %1").arg(pathStrList.join(" → ")));
-            ui->resultTextEdit->append(QString("Длина пути: %1").arg(state.distances[end]));
+            ui->resultTextEdit->append(QString(tr("Кратчайший путь: %1")).arg(pathStrList.join(" → ")));
+            ui->resultTextEdit->append(QString(tr("Длина пути: %1")).arg(state.distances[end]));
 
             highlightPath(path);
         }
@@ -644,7 +671,7 @@ void MainWindow::onStepClicked()
     int current = stepper->getState().currentVertex + 1;
     if (change.vertexUpdated != -1) {
         ui->resultTextEdit->append(
-            QString("Обработана вершина %1: обновлено расстояние до вершины %2 с %3 на %4 (через %5)")
+            QString(tr("Обработана вершина %1: обновлено расстояние до вершины %2 с %3 на %4 (через %5)"))
                 .arg(current)
                 .arg(change.vertexUpdated + 1)
                 .arg(change.oldDistance == std::numeric_limits<int>::max() ? "∞" : QString::number(change.oldDistance))
@@ -653,7 +680,7 @@ void MainWindow::onStepClicked()
             );
     } else {
         ui->resultTextEdit->append(
-            QString("Обработана вершина %1: соседние вершины не обновлены").arg(current)
+            QString(tr("Обработана вершина %1: соседние вершины не обновлены")).arg(current)
             );
     }
 

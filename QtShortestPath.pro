@@ -1,6 +1,11 @@
 QT       += core gui
 QT       += core widgets
 RESOURCES += resources.qrc
+TRANSLATIONS += app_ru.ts \
+                app_en.ts
+
+
+
 
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets

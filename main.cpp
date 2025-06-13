@@ -1,5 +1,6 @@
 #include <QApplication>
 #include <QFile>
+#include <QMessageBox>
 #include "mainwindow.h"
 
 int main(int argc, char *argv[])
@@ -12,7 +13,7 @@ int main(int argc, char *argv[])
         QString style = QLatin1String(styleFile.readAll());
         a.setStyleSheet(style);
     } else {
-        qDebug() << "Не удалось загрузить файл стилей!";
+        QMessageBox::warning(nullptr, QObject::tr("Ошибка"), QObject::tr("Не удалось загрузить файл стилей!"));
     }
 
     MainWindow w;

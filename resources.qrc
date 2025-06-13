@@ -2,7 +2,7 @@
     <qresource prefix="/">
         <file>light.qss</file>
         <file>dark.qss</file>
-        <!-- Можешь добавить иконки или изображения, если нужно -->
-        <!-- <file>icons/my_icon.png</file> -->
+        <file>app_en.qm</file>
+        <file>app_ru.qm</file>
     </qresource>
 </RCC>

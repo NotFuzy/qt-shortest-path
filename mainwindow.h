@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QPointF>
+#include <QTranslator>
 #include <memory>
 #include "graph.h"
 #include "clickablescene.h"
@@ -58,6 +59,10 @@ private:
     int selectedVertexForEdge = -1;
     std::unique_ptr<graphlib::DijkstraStepper> stepper;
     bool darkTheme = false;
+
+    QTranslator translator;
+    void switchLanguage(const QString &locale);
+    void retranslateUi();
 
 
 };

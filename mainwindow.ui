@@ -274,7 +274,15 @@
     <property name="title">
      <string>Настройка приложения</string>
     </property>
+    <widget class="QMenu" name="menu_3">
+     <property name="title">
+      <string>Языки</string>
+     </property>
+     <addaction name="actionEnglish"/>
+     <addaction name="actionRussia"/>
+    </widget>
     <addaction name="actionToggleTheme"/>
+    <addaction name="menu_3"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -300,6 +308,16 @@
    </property>
    <property name="text">
     <string>Тёмная тема</string>
+   </property>
+  </action>
+  <action name="actionEnglish">
+   <property name="text">
+    <string>English</string>
+   </property>
+  </action>
+  <action name="actionRussia">
+   <property name="text">
+    <string>Русский</string>
    </property>
   </action>
  </widget>
