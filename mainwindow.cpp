@@ -346,6 +346,8 @@ void MainWindow::drawEdges()
 
     for (int from = 0; from < count; ++from) {
         for (const auto& [to, weight] : graph->getEdges(from)) {
+
+            // Пропуск дублирующих рёбер в неориентированном графе
             if (!graph->isDirected() && drawnEdges.contains(QString("%1-%2").arg(to).arg(from)))
                 continue;
 
@@ -353,23 +355,23 @@ void MainWindow::drawEdges()
             QPointF p2 = nodePositions[to];
             QLineF line(p1, p2);
 
+            // Укорачиваем линию до границ окружностей вершин
             line.setLength(line.length() - nodeRadius);
             line.setP1(line.pointAt(static_cast<qreal>(nodeRadius) / line.length()));
 
-            // Рисуем линию и сохраняем указатель
-            QPen edgePen(lineColor, 2);
+            // Рисование линии ребра
+            QPen edgePen(lineColor, 1);
             QGraphicsLineItem* lineItem = scene->addLine(line, edgePen);
             edgeItems[qMakePair(from, to)] = lineItem;
-
             if (!graph->isDirected())
                 edgeItems[qMakePair(to, from)] = lineItem;
 
-            // Подпись веса
+            // Отображение веса ребра
             QGraphicsTextItem* weightLabel = scene->addText(QString::number(weight));
             weightLabel->setDefaultTextColor(textColor);
             weightLabel->setPos((line.p1() + line.p2()) / 2);
 
-            // Рисуем стрелку, если ориентированный
+            // Отрисовка стрелки для направленного графа
             if (graph->isDirected()) {
                 double angle = std::atan2(-line.dy(), line.dx());
                 QPointF arrowTip = p2 - QPointF(std::cos(angle) * nodeRadius,
@@ -380,35 +382,39 @@ void MainWindow::drawEdges()
                 QPointF arrowP2 = arrowTip - QPointF(std::cos(angle - M_PI / 6) * 10,
                                                      -std::sin(angle - M_PI / 6) * 10);
 
-                QPolygonF arrowHead;
-                arrowHead << arrowTip << arrowP1 << arrowP2;
-
+                QPolygonF arrowHead { arrowTip, arrowP1, arrowP2 };
                 scene->addPolygon(arrowHead, QPen(lineColor), QBrush(lineColor));
             }
 
+            // Отмечаем, что ребро отрисовано (для неориентированного графа)
             if (!graph->isDirected())
                 drawnEdges.insert(QString("%1-%2").arg(from).arg(to));
         }
     }
 }
 
-void MainWindow::highlightPath(const QVector<int>& path)
-{
-    // Сброс стиля всех рёбер
-    for (auto* item : edgeItems.values()) {
-        item->setPen(QPen(Qt::black, 2));
+
+void MainWindow::highlightPath(const QVector<int>& path) {
+    // Сброс цвета всех рёбер
+    QColor baseColor = darkTheme ? QColor(200, 200, 200) : Qt::black;
+    for (auto lineItem : edgeItems.values()) {
+        lineItem->setPen(QPen(baseColor, 1));
     }
 
     // Подсветка пути
     for (int i = 0; i < path.size() - 1; ++i) {
-        int from = path[i];
-        int to = path[i + 1];
-        QPair<int, int> key = qMakePair(from, to);
-        if (edgeItems.contains(key)) {
-            edgeItems[key]->setPen(QPen(Qt::red, 3));
+        int u = path[i];
+        int v = path[i + 1];
+        QPair<int, int> edgeKey = qMakePair(u, v);
+
+        if (edgeItems.contains(edgeKey)) {
+            edgeItems[edgeKey]->setPen(QPen(Qt::red, 3));
+        } else if (edgeItems.contains(qMakePair(v, u))) {
+            edgeItems[qMakePair(v, u)]->setPen(QPen(Qt::red, 3));
         }
     }
 }
+
 
 void MainWindow::onSceneClicked(const QPointF& pos)
 {
