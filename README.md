@@ -4,6 +4,7 @@ Desktop application for finding the shortest path in a weighted graph using Dijk
 
 Десктопное приложение для поиска кратчайшего пути во взвешенном графе алгоритмом Дейкстры. Дипломный проект, C++ / Qt.
 
+![Screenshot](IMG_20261012_035733_895.jpg)
 
 ## Возможности
 
